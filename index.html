@@ -351,6 +351,17 @@
   .mp-btn{background:none;border:none;color:var(--muted);padding:4px 8px;cursor:pointer;border-radius:20px;font-size:16px;transition:color .15s;}
   .mp-btn:active{color:var(--text);}
 
+  /* GEAR BUTTON */
+  .gear-btn{
+    width:36px;height:36px;border-radius:12px;
+    background:var(--surface2);border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--muted);cursor:pointer;
+    transition:all .15s ease;flex-shrink:0;
+    box-shadow:var(--shadow);
+  }
+  .gear-btn:active{transform:scale(.93);color:var(--text);}
+
   /* EMPTY */
   .empty{text-align:center;padding:48px 24px;color:var(--muted);}
   .empty-icon{font-size:48px;margin-bottom:12px;opacity:.5;}
@@ -369,6 +380,26 @@
 
   @keyframes fadeInUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
   .anim{animation:fadeInUp .3s ease both;}
+
+  /* GEAR BUTTON */
+  .gear-btn{
+    width:36px;height:36px;border-radius:12px;
+    background:var(--surface2);border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;color:var(--muted);
+    transition:color .15s,background .15s;
+    box-shadow:var(--shadow);
+    flex-shrink:0;
+  }
+  .gear-btn:active{color:var(--text);background:var(--surface3);}
+
+  /* SETTINGS STATS */
+  .settings-stat{
+    flex:1;background:var(--surface2);border-radius:12px;
+    padding:12px;text-align:center;border:1px solid var(--border);
+  }
+  .settings-stat-val{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:2px;}
+  .settings-stat-label{font-size:11px;color:var(--muted);}
 </style>
 </head>
 <body>
@@ -380,9 +411,14 @@
   <div class="screen active" id="screen-dash">
     <div class="topbar">
       <div class="topbar-title">Bolso 💸</div>
-      <div class="topbar-badge" onclick="openMonthPicker()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        <span id="dash-month-label">mai 2025</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="topbar-badge" onclick="openMonthPicker()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span id="dash-month-label">mai 2025</span>
+        </div>
+        <button class="gear-btn" onclick="openModal('settings-modal')" aria-label="Configuracoes">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
       </div>
     </div>
     <div class="screen-body">
@@ -620,8 +656,53 @@
     </div>
   </div>
 
-</div>
+  <!-- ===== MODAL: SETTINGS ===== -->
+  <div class="modal-overlay" id="settings-modal">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+        <div style="width:38px;height:38px;border-radius:12px;background:var(--surface2);display:flex;align-items:center;justify-content:center;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <div class="modal-title" style="margin-bottom:0;">Configurações</div>
+      </div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:24px;">Gerencie os dados do seu aplicativo.</p>
 
+      <!-- Stats summary -->
+      <div id="settings-stats" style="display:flex;gap:8px;margin-bottom:24px;"></div>
+
+      <!-- Danger zone -->
+      <div style="border:1px solid rgba(255,92,92,.2);border-radius:16px;padding:16px;background:rgba(255,92,92,.04);">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:18px;">⚠️</span>
+          <span style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--danger);">Zona de Perigo</span>
+        </div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5;">Esta ação é <strong style="color:var(--text);">irreversível</strong>. Todos os dados de entradas e gastos serão permanentemente excluídos do dispositivo.</p>
+        <button class="btn" style="background:rgba(255,92,92,.1);color:var(--danger);border:1px solid rgba(255,92,92,.25);font-size:14px;padding:13px;" onclick="confirmReset()">
+          🗑 Excluir todos os dados
+        </button>
+      </div>
+
+      <button class="btn btn-ghost" onclick="closeModal('settings-modal')" style="margin-top:12px;">Fechar</button>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: CONFIRM RESET ===== -->
+  <div class="modal-overlay" id="confirm-reset-modal">
+    <div class="modal-sheet" style="text-align:center;">
+      <div class="modal-handle"></div>
+      <div style="font-size:52px;margin-bottom:12px;">🗑️</div>
+      <div class="modal-title" style="text-align:center;">Tem certeza?</div>
+      <p style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:8px;">Todos os seus dados serão <strong style="color:var(--danger);">deletados permanentemente</strong>.</p>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:24px;">Esta ação não pode ser desfeita.</p>
+      <button class="btn" style="background:var(--danger);color:#fff;margin-bottom:10px;font-size:15px;" onclick="resetAllData()">
+        Sim, excluir tudo
+      </button>
+      <button class="btn btn-ghost" onclick="closeModal('confirm-reset-modal')">Cancelar, manter dados</button>
+    </div>
+  </div>
+
+</div>
 <script>
 // ======= DATA =======
 const STORAGE_KEY = 'bolso_v3';
@@ -1054,6 +1135,42 @@ function showToast(msg){
   t.textContent=msg;t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2200);
 }
+
+// ======= SETTINGS =======
+function renderSettingsStats(){
+  const totalInc=db.incomes.length;
+  const totalExp=db.expenses.length;
+  const months=new Set([...db.incomes.map(x=>x.date.slice(0,7)),...db.expenses.map(x=>x.date.slice(0,7))]).size;
+  document.getElementById('settings-stats').innerHTML=[
+    {label:'Entradas',val:totalInc,icon:'📥',color:'var(--success)'},
+    {label:'Gastos',val:totalExp,icon:'📤',color:'var(--danger)'},
+    {label:'Meses',val:months||0,icon:'📅',color:'var(--warn)'},
+  ].map(s=>`<div style="flex:1;background:var(--surface2);border-radius:12px;padding:12px 8px;text-align:center;">
+    <div style="font-size:20px;margin-bottom:4px;">${s.icon}</div>
+    <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:${s.color};">${s.val}</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:2px;">${s.label}</div>
+  </div>`).join('');
+}
+function confirmReset(){
+  closeModal('settings-modal');
+  openModal('confirm-reset-modal');
+}
+function resetAllData(){
+  db={incomes:[],expenses:[]};
+  saveData(db);
+  closeModal('confirm-reset-modal');
+  activeDate=today();
+  activeCatFilter='all';
+  activeTypeFilter='all';
+  render();
+  showToast('✅ Todos os dados foram excluídos');
+}
+// Intercept openModal to refresh stats panel
+const _origOpenModal=openModal;
+openModal=function(id){
+  _origOpenModal(id);
+  if(id==='settings-modal') renderSettingsStats();
+};
 
 render();
 </script>
