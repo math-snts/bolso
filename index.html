@@ -536,9 +536,17 @@
       <div class="form-group">
         <label class="form-label">Recorrência</label>
         <select class="form-input" id="inc-recur">
-          <option value="once">Apenas este mês</option>
-          <option value="monthly">Mensal (recorrente)</option>
+          <option value="once">Sem recorrência (uma vez)</option>
+          <option value="monthly">Mensal — repete todo mês</option>
+          <option value="bimonthly">Bimestral — a cada 2 meses</option>
+          <option value="quarterly">Trimestral — a cada 3 meses</option>
+          <option value="yearly">Anual — uma vez por ano</option>
         </select>
+      </div>
+      <div class="form-group" id="recur-until-wrap" style="display:none;">
+        <label class="form-label">Repetir até</label>
+        <input class="form-input" id="inc-until" type="month" placeholder="Ex: 2025-12">
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">Deixe vazio para criar só no mês selecionado acima.</div>
       </div>
       <button class="btn btn-primary" onclick="saveIncome()">Salvar Entrada</button>
       <button class="btn btn-ghost" onclick="closeModal('income-modal')">Cancelar</button>
@@ -722,10 +730,41 @@ function saveIncome(){
   const date=document.getElementById('inc-date').value;
   const type=document.getElementById('inc-type').value;
   const recur=document.getElementById('inc-recur').value;
+  const until=document.getElementById('inc-until').value; // 'YYYY-MM' or ''
   if(!desc||!val||!date){showToast('Preencha todos os campos!');return;}
-  db.incomes.push({id:Date.now(),desc,val,date,type,recur});
+
+  const stepMap={monthly:1,bimonthly:2,quarterly:3,yearly:12};
+  const step=stepMap[recur]||0;
+  const baseId=Date.now();
+
+  if(recur==='once'||step===0||!until){
+    // Single entry
+    db.incomes.push({id:baseId,desc,val,date,type,recur:'once'});
+  } else {
+    // Generate one entry per occurrence from date up to until (YYYY-MM)
+    const [sy,sm]=date.split('-').map(Number);   // start year/month
+    const [uy,um]=until.split('-').map(Number);  // until year/month
+    let count=0;
+    let cy=sy,cm=sm;
+    while((cy<uy)||(cy===uy&&cm<=um)){
+      const iso=`${cy}-${String(cm).padStart(2,'0')}-${date.split('-')[2]}`;
+      db.incomes.push({id:baseId+count,groupId:baseId,desc,val,date:iso,type,recur});
+      count++;
+      cm+=step;
+      while(cm>12){cm-=12;cy++;}
+    }
+    if(count===0){
+      // fallback: at least the start date
+      db.incomes.push({id:baseId,desc,val,date,type,recur:'once'});
+    }
+  }
+
   saveData(db);closeModal('income-modal');
-  document.getElementById('inc-desc').value='';document.getElementById('inc-val').value='';
+  document.getElementById('inc-desc').value='';
+  document.getElementById('inc-val').value='';
+  document.getElementById('inc-until').value='';
+  document.getElementById('inc-recur').value='once';
+  toggleRecurUntil();
   showToast('✅ Entrada salva!');render();
 }
 
@@ -753,9 +792,26 @@ function saveExpense(){
   showToast('✅ Gasto salvo!');render();
 }
 
+// ======= RECURRENCE UI =======
+function toggleRecurUntil(){
+  const recur=document.getElementById('inc-recur').value;
+  const wrap=document.getElementById('recur-until-wrap');
+  wrap.style.display=recur==='once'?'none':'block';
+}
+document.getElementById('inc-recur').addEventListener('change',toggleRecurUntil);
+
 // ======= DELETE =======
 function deleteIncome(id){
-  db.incomes=db.incomes.filter(x=>x.id!==id);
+  const inc=db.incomes.find(x=>x.id===id);
+  if(inc&&inc.groupId){
+    if(confirm('Remover todas as ocorrências desta recorrência?')){
+      db.incomes=db.incomes.filter(x=>x.groupId!==inc.groupId);
+    } else {
+      db.incomes=db.incomes.filter(x=>x.id!==id);
+    }
+  } else {
+    db.incomes=db.incomes.filter(x=>x.id!==id);
+  }
   saveData(db);render();showToast('🗑 Entrada removida');
 }
 function deleteExpense(id,hasGroup){
@@ -779,7 +835,7 @@ function deleteExpense(id,hasGroup){
 // ======= FILTER HELPERS =======
 function getMonthIncomes(y,m){
   const key=`${y}-${String(m+1).padStart(2,'0')}`;
-  return db.incomes.filter(x=>x.recur==='monthly'||x.date.startsWith(key));
+  return db.incomes.filter(x=>x.date.startsWith(key));
 }
 function getMonthExpenses(y,m){
   const key=`${y}-${String(m+1).padStart(2,'0')}`;
@@ -914,7 +970,7 @@ function renderIncomeScreen(y,m){
     <div class="income-item anim">
       <div class="income-icon">${incomeEmoji(inc.type)}</div>
       <div class="income-info">
-        <div class="income-name">${inc.desc}${inc.recur==='monthly'?'<span class="tag">Mensal</span>':''}</div>
+        <div class="income-name">${inc.desc}${inc.recur&&inc.recur!=='once'?`<span class="tag">${recurLabel(inc.recur)}</span>`:''}</div>
         <div class="income-type">${inc.type} · ${fmtDate(inc.date)}</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
@@ -923,6 +979,7 @@ function renderIncomeScreen(y,m){
       </div>
     </div>`).join('');
 }
+function recurLabel(r){return{monthly:'Mensal',bimonthly:'Bimestral',quarterly:'Trimestral',yearly:'Anual'}[r]||'';}
 function incomeEmoji(t){return {Salário:'💼',Freelance:'💻',Investimento:'📈',Aluguel:'🏠',Presente:'🎁',Outro:'✨'}[t]||'💰';}
 
 // ===== EXPENSE SCREEN =====
